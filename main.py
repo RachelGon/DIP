@@ -1,16 +1,29 @@
-# This is a sample Python script.
+import cv2
+import pytesseract
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+# Path to Tesseract executable (change this based on your system)
+pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
+# Grayscale, Gaussian blur, Otsu's threshold
+image  = cv2.imread("images/LP1.png")
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+blur = cv2.GaussianBlur(gray, (3,3), 0)
+thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+# Morph open to remove noise and invert image
+kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=2)
+closing = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations=2)
+second = cv2.morphologyEx(closing, cv2.MORPH_OPEN, kernel, iterations=2)
+invert = 255 - opening
 
+# Perform text extraction
+data = pytesseract.image_to_string(second, lang='eng', config='--psm 6')
+print(data)
+print("data")
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+cv2.imshow('thresh', thresh)
+cv2.imshow('opening', opening)
+cv2.imshow('closing', closing)
+cv2.imshow('second', second)
+cv2.waitKey()
