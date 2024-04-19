@@ -1,63 +1,81 @@
 import os
 
 import cv2
+import numpy as np
 import pytesseract
 
 # Path to Tesseract executable (change this based on your system)
 pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+car_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_russian_plate_number.xml")
 
 
 def get_ROI(image):
-    # Convert the image to grayscale
+    # Load the pre-trained car detection model
+
+    # Convert image to grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    # Apply Gaussian blur to reduce noise
-    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    # Detect plates in the image
+    plates = car_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
-    # Perform edge detection using Canny
-    edges = cv2.Canny(blurred, 50, 150)
+    # Loop over detected cars
+    for (x, y, w, h) in plates:
+        # Define ROI for license plate
+        roi = image[y:y + h, x:x + w]
 
-    # Find contours in the edged image
-    contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        # Perform OCR on the license plate ROI
+        license_plate_text = pytesseract.image_to_string(roi, config='--psm 8')
 
-    # Sort contours by area and find the largest contour
-    contour_areas = [cv2.contourArea(c) for c in contours]
-    max_contour_index = contour_areas.index(max(contour_areas))
-    largest_contour = contours[max_contour_index]
+        # If license plate text is detected, return the license plate ROI
+        if license_plate_text:
+            return roi
+    else:
+        # Convert the image to grayscale
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    # Get the bounding box of the largest contour
-    x, y, w, h = cv2.boundingRect(largest_contour)
+        # Apply Gaussian blur to reduce noise
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
-    # Extract the region of interest (ROI) containing the license plate
-    license_plate_roi = image[y:y + h, x:x + w]
+        # Perform edge detection using Canny
+        edges = cv2.Canny(blurred, 50, 150)
 
-    return license_plate_roi
+        # Find contours in the edged image
+        contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # Sort contours by area and find the largest contour
+        contour_areas = [cv2.contourArea(c) for c in contours]
+        max_contour_index = contour_areas.index(max(contour_areas))
+        largest_contour = contours[max_contour_index]
+
+        # Get the bounding box of the largest contour
+        x, y, w, h = cv2.boundingRect(largest_contour)
+
+        # Extract the region of interest (ROI) containing the license plate
+        license_plate_roi = image[y:y + h, x:x + w]
+
+        return license_plate_roi
+
 
 def extract_license_plate(image):
-
     # Preprocess the license plate image
     roi_image = get_ROI(image)
-
     cv2.imshow('ROI', roi_image)
 
-    gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
+    # gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
+    # blur = cv2.GaussianBlur(gray, (3, 3), 0)
+    hsv = cv2.cvtColor(roi_image, cv2.COLOR_BGR2HSV)
+    h, s, v = cv2.split(hsv)
 
-    # _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    thresh = cv2.adaptiveThreshold(v, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 
+    eroded = cv2.erode(thresh, None, iterations=1)
+    dilated = cv2.dilate(eroded, None, iterations=1)
 
-    kernel_size = (3, 3)
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, kernel_size)
-    dilate_image = cv2.dilate(gray, kernel, iterations=1)
-
-
-
-    cv2.imshow('ROI - roi_image', dilate_image)
-
-    # Use Pytesseract to extract text from the license plate image
-    license_plate_text = pytesseract.image_to_string(dilate_image, config='--psm 8')
-
+    cv2.imshow('ROI - dilated', dilated)
+    license_plate_text = pytesseract.image_to_string(dilated, config='--psm 6')
 
     return license_plate_text.strip()
+
 
 def main():
     # Path to the directory containing the images
@@ -80,7 +98,6 @@ def main():
 
             cv2.waitKey(0)
             cv2.destroyAllWindows()
-
 
 
 if __name__ == "__main__":
