@@ -1,4 +1,5 @@
 import os
+import imutils
 
 import cv2
 import numpy as np
@@ -59,20 +60,26 @@ def get_ROI(image):
 def extract_license_plate(image):
     # Preprocess the license plate image
     roi_image = get_ROI(image)
+    roi_image = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
+
+    
     cv2.imshow('ROI', roi_image)
 
-    # gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
-    # blur = cv2.GaussianBlur(gray, (3, 3), 0)
-    hsv = cv2.cvtColor(roi_image, cv2.COLOR_BGR2HSV)
-    h, s, v = cv2.split(hsv)
+    # # gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
+    # # blur = cv2.GaussianBlur(gray, (3, 3), 0)
+    # hsv = cv2.cvtColor(roi_image, cv2.COLOR_BGR2HSV)
+    # h, s, v = cv2.split(hsv)
 
-    thresh = cv2.adaptiveThreshold(v, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+    # thresh = cv2.adaptiveThreshold(v, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 
-    eroded = cv2.erode(thresh, None, iterations=1)
-    dilated = cv2.dilate(eroded, None, iterations=1)
+    # eroded = cv2.erode(thresh, None, iterations=1)
+    # dilated = cv2.dilate(eroded, None, iterations=1)
 
-    cv2.imshow('ROI - dilated', dilated)
-    license_plate_text = pytesseract.image_to_string(dilated, config='--psm 6')
+    thr = cv2.adaptiveThreshold(roi_image, 252, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 12)
+    bnt = cv2.bitwise_not(thr)
+
+    cv2.imshow('ROI - bnt', bnt)
+    license_plate_text = pytesseract.image_to_string(bnt, config="--psm 6")
 
     return license_plate_text.strip()
 
