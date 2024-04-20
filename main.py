@@ -60,7 +60,7 @@ def get_ROI(image):
 def extract_license_plate(image):
     # Preprocess the license plate image
     roi_image = get_ROI(image)
-    roi_image = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
 
     
     cv2.imshow('ROI', roi_image)
@@ -75,11 +75,23 @@ def extract_license_plate(image):
     # eroded = cv2.erode(thresh, None, iterations=1)
     # dilated = cv2.dilate(eroded, None, iterations=1)
 
-    thr = cv2.adaptiveThreshold(roi_image, 252, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 12)
+    blur = cv2.GaussianBlur(gray, (3, 3), 0)
+
+    thr = cv2.adaptiveThreshold(blur, 252, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 5, 15)
     bnt = cv2.bitwise_not(thr)
 
-    cv2.imshow('ROI - bnt', bnt)
-    license_plate_text = pytesseract.image_to_string(bnt, config="--psm 6")
+    erodedkernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
+    dilatekernel = np.ones((3,3),np.uint)
+
+    eroded = cv2.erode(bnt, erodedkernel, iterations=1)
+    dilate = cv2.dilate(eroded, dilatekernel, iterations=2)
+    # dilate = cv2.dilate(dilate, None, iterations=1)
+    
+
+    cv2.imshow('ROI - bnt {image}', bnt)
+    cv2.imshow('ROI - bnerodedt {image}', eroded)
+    cv2.imshow('ROI - dilate {image}', dilate)
+    license_plate_text = pytesseract.image_to_string(dilate, config="--psm 6")
 
     return license_plate_text.strip()
 
