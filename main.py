@@ -24,12 +24,7 @@ def get_ROI(image):
         # Define ROI for license plate
         roi = image[y:y + h, x:x + w]
 
-        # Perform OCR on the license plate ROI
-        license_plate_text = pytesseract.image_to_string(roi, config='--psm 8')
-
-        # If license plate text is detected, return the license plate ROI
-        if license_plate_text:
-            return roi
+        return roi
     else:
         # Convert the image to grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -65,8 +60,8 @@ def extract_license_plate(image):
     
     cv2.imshow('ROI', roi_image)
 
-    # # gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
-    # # blur = cv2.GaussianBlur(gray, (3, 3), 0)
+    # gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
+    # blur = cv2.GaussianBlur(gray, (3, 3), 0)
     # hsv = cv2.cvtColor(roi_image, cv2.COLOR_BGR2HSV)
     # h, s, v = cv2.split(hsv)
 
@@ -100,6 +95,7 @@ def extract_license_plate(image):
     cv2.imshow('2ROI - eroded {image}', eroded)
     cv2.imshow('3ROI - dilate {image}', dilate)
     cv2.imshow('4ROI - erodeded {image}', erodeded)
+
     license_plate_text = pytesseract.image_to_string(bnt, config="--psm 6")
 
     return license_plate_text.strip()
