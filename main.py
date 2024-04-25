@@ -79,6 +79,7 @@ def extract_license_plate(image):
 
     thr = cv2.adaptiveThreshold(blur, 252, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 17, 46)
     thr2 = cv2.adaptiveThreshold(blur, 252, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 21, 66)
+   
     bnt = cv2.bitwise_not(thr)
     bnt2 = cv2.bitwise_not(thr2)
 
@@ -99,8 +100,7 @@ def extract_license_plate(image):
     cv2.imshow('2ROI - eroded {image}', eroded)
     cv2.imshow('3ROI - dilate {image}', dilate)
     cv2.imshow('4ROI - erodeded {image}', erodeded)
-    license_plate_text = pytesseract.image_to_string(bnt2, lang ='eng', config ='--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
-
+    license_plate_text = pytesseract.image_to_string(bnt, config="--psm 6")
 
     return license_plate_text.strip()
 
