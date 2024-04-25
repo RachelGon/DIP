@@ -79,6 +79,7 @@ def extract_license_plate(image):
 
     thr = cv2.adaptiveThreshold(blur, 252, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 17, 46)
     thr2 = cv2.adaptiveThreshold(blur, 252, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 21, 66)
+   
     bnt = cv2.bitwise_not(thr)
     bnt2 = cv2.bitwise_not(thr2)
 
