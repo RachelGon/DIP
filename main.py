@@ -99,7 +99,8 @@ def extract_license_plate(image):
     cv2.imshow('2ROI - eroded {image}', eroded)
     cv2.imshow('3ROI - dilate {image}', dilate)
     cv2.imshow('4ROI - erodeded {image}', erodeded)
-    license_plate_text = pytesseract.image_to_string(bnt, config="--psm 6")
+    license_plate_text = pytesseract.image_to_string(bnt2, lang ='eng', config ='--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+
 
     return license_plate_text.strip()
 
