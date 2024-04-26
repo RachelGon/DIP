@@ -4,7 +4,7 @@ import pytesseract
 import numpy as np
 import easyocr
 
-# Specify the path to the Tesseract executable
+# Specify path to the Tesseract executable
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
 # Load pre-trained data on license plates (Haar Cascade)
