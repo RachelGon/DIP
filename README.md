@@ -1,6 +1,6 @@
 # License Plate Recognition System
 
-This repository contains a Python application designed to recognize license plates from images using two different Optical Character Recognition (OCR) technologies: EasyOCR and Tesseract OCR. Users can choose the preferred OCR engine at runtime, making this a versatile tool for license plate detection in various environments.
+This repository contains a Python application designed to recognize license plates from images using two different Optical Character Recognition (OCR) technologies: EasyOCR and Tesseract OCR. Users can choose the preferred OCR engine at runtime.
 
 ## Features
 
